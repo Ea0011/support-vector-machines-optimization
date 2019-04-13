@@ -18,77 +18,12 @@ dual_objective = @(m) 1/2 * m * G * transpose(m) - dot(e, m);
 constraint_1 = @(m) (dot(classes, m)).^2;
 constraint_2 = @(m) dot((max(0, -m)).^2, e);
 
-% todo change constraints for barrier and penalty methods
-function [optimal] = barrier(objective, constraint_1, constraint_2, pen_1, pen_2, guess)
-  err = 10^-10;
-  max_count = 10;
-  cnt = 1;
-  
-  optimal_start = guess;
-  barrier_objective = @(c1, c2) @(m) objective(m) - 1 / c1 * 1 / constraint_1(m) - 1 / c2 * 1 / constraint_2(m);
-  
-  optimal_found = fminsearch(barrier_objective(pen_1, pen_2), optimal_start);
-  
-  while(cnt <= max_count && norm(optimal_start - optimal_found) >= err)
-    optimal_start = optimal_found;
-    pen_1 = 10^10 * pen_1;
-    pen_2 = 10^10 * pen_2;
-    
-    optimal_found = fminsearch(barrier_objective(pen_1, pen_2), optimal_found);
-    cnt = cnt + 1;
-  endwhile
-  
-  optimal = optimal_found;
-endfunction
-
-function [optimal] = penalty(objective, constraint_1, constraint_2, pen_1, pen_2, guess)
-  err = 10^-10;
-  max_count = 10;
-  cnt = 1;
-  
-  optimal_start = -guess;
-  penalty_obejctive = @(c1, c2) @(m) objective(m) + c1 * constraint_1(m) + c2 * constraint_2(m);
-  
-  optimal_found = fminsearch(barrier_pen(pen_1, pen_2), optimal_start);
-  
-  while(cnt <= max_count && norm(optimal_start - optimal_found) >= err)
-    optimal_start = optimal_found;
-    pen_1 = 10^10 * pen_1;
-    pen_2 = 10^10 * pen_2;
-    
-    optimal_found = fminsearch(penalty_obejctive(pen_1, pen_2), optimal_found);
-    cnt = cnt + 1;
-  endwhile
-  
-  optimal = optimal_found;
-endfunction
-
 c_first = 10^20;
 c_second = 10^20;
 optimal_start = ones(1, length(classes));
 
-err = 10^-10;
-max_count = 10;
-cnt = 1;
-
-opt = barrier(dual_objective, constraint_1, constraint_2, c_first, c_second, optimal_start);
-
-penalty_objective = @(c1, c2) @(m) dual_objective(m) + c2 * constraint_2(m) + c1 * constraint_1(m);
-barrier_objective = @(c1, c2) @(m) dual_objective(m) + 1 / c2 * 1 / constraint_2(m) + 1 / c1 * 1 / constraint_1(m);
-
-optimal = fminsearch(barrier_objective(c_first, c_second), optimal_start);
-
-while(norm(optimal - optimal_start) >= err && cnt <= max_count)
-  optimal_start = optimal;
-  c_first = 10^2 * c_first;
-  c_second = 10^2 * c_second;
-
-  func = barrier_objective(c_first, c_second);
-  optimal = fminsearch(func, optimal);
-  cnt = cnt + 1;
-endwhile
-
-optimal
+% optimal = barrier(dual_objective, c_first, c_second, optimal_start, classes);
+optimal = penalty(dual_objective, c_first, c_second, optimal_start, classes);
 
 w = [];
 
