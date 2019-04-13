@@ -54,7 +54,7 @@ scatter(plot_x(:, 1)(classes == -1), plot_x(:, 2)(classes == -1), '-*');
 
 hold on;
 
-b = bias(classes, optimal, w, 0.5);
+b = bias(classes, important_predictors, optimal, w, 0.5);
 
 hyperplane = @(n, x) -n(1) * x / n(2) - b / n(2);
 

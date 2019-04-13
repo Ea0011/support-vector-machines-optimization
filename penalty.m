@@ -1,6 +1,6 @@
 function [optimal] = penalty(objective, pen_1, pen_2, guess, classes)
   err = 10^-10;
-  max_count = 10;
+  max_count = 20;
   cnt = 1;
   
   equality_constraint = @(m) (dot(classes, m)).^2;
