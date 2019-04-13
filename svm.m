@@ -3,7 +3,7 @@ delimiterIn = ',';
 data = importdata(filename, delimiterIn, 1).data;
 
 classes = data(:, 5);
-important_predictors = [data(:, 1), data(:, 2), data(:, 3), data(:, 4)];
+important_predictors = [data(:, 3), data(:, 4)];
 
 G = [];
 e = ones(1, length(classes));
@@ -15,26 +15,75 @@ for i = 1:length(important_predictors)
 endfor
 
 dual_objective = @(m) 1/2 * m * G * transpose(m) - dot(e, m);
-constraint_1 = @(m) abs(dot(classes, m));
-constraint_2 = @(m) abs((max(0, -m)));
+constraint_1 = @(m) (dot(classes, m)).^2;
+constraint_2 = @(m) dot((max(0, -m)).^2, e);
 
-c_first = 100;
-c_rest = 100 * ones(1, length(classes));
-optimal_start = zeros(1, length(classes));
-optimal = ones(1, length(classes));
+% todo change constraints for barrier and penalty methods
+function [optimal] = barrier(objective, constraint_1, constraint_2, pen_1, pen_2, guess)
+  err = 10^-10;
+  max_count = 10;
+  cnt = 1;
+  
+  optimal_start = guess;
+  barrier_objective = @(c1, c2) @(m) objective(m) - 1 / c1 * 1 / constraint_1(m) - 1 / c2 * 1 / constraint_2(m);
+  
+  optimal_found = fminsearch(barrier_objective(pen_1, pen_2), optimal_start);
+  
+  while(cnt <= max_count && norm(optimal_start - optimal_found) >= err)
+    optimal_start = optimal_found;
+    pen_1 = 10^10 * pen_1;
+    pen_2 = 10^10 * pen_2;
+    
+    optimal_found = fminsearch(barrier_objective(pen_1, pen_2), optimal_found);
+    cnt = cnt + 1;
+  endwhile
+  
+  optimal = optimal_found;
+endfunction
 
-err = 10^-3;
+function [optimal] = penalty(objective, constraint_1, constraint_2, pen_1, pen_2, guess)
+  err = 10^-10;
+  max_count = 10;
+  cnt = 1;
+  
+  optimal_start = -guess;
+  penalty_obejctive = @(c1, c2) @(m) objective(m) + c1 * constraint_1(m) + c2 * constraint_2(m);
+  
+  optimal_found = fminsearch(barrier_pen(pen_1, pen_2), optimal_start);
+  
+  while(cnt <= max_count && norm(optimal_start - optimal_found) >= err)
+    optimal_start = optimal_found;
+    pen_1 = 10^10 * pen_1;
+    pen_2 = 10^10 * pen_2;
+    
+    optimal_found = fminsearch(penalty_obejctive(pen_1, pen_2), optimal_found);
+    cnt = cnt + 1;
+  endwhile
+  
+  optimal = optimal_found;
+endfunction
+
+c_first = 10^20;
+c_second = 10^20;
+optimal_start = ones(1, length(classes));
+
+err = 10^-10;
 max_count = 10;
 cnt = 1;
 
-penalty_objective = @(c1, c2) @(m) dual_objective(m) + c1 * constraint_1(m) + dot(c2, constraint_2(m)); 
+opt = barrier(dual_objective, constraint_1, constraint_2, c_first, c_second, optimal_start);
 
-while(cnt <= max_count)
+penalty_objective = @(c1, c2) @(m) dual_objective(m) + c2 * constraint_2(m) + c1 * constraint_1(m);
+barrier_objective = @(c1, c2) @(m) dual_objective(m) + 1 / c2 * 1 / constraint_2(m) + 1 / c1 * 1 / constraint_1(m);
+
+optimal = fminsearch(barrier_objective(c_first, c_second), optimal_start);
+
+while(norm(optimal - optimal_start) >= err && cnt <= max_count)
   optimal_start = optimal;
-  c_first = 100 * c_first;
-  c_rest = 100 * c_rest;
+  c_first = 10^2 * c_first;
+  c_second = 10^2 * c_second;
 
-  func = penalty_objective(c_first, c_rest);
+  func = barrier_objective(c_first, c_second);
   optimal = fminsearch(func, optimal);
   cnt = cnt + 1;
 endwhile
@@ -49,12 +98,12 @@ for i = 1:length(important_predictors(1, :))
     acc = acc + optimal(j) * classes(j) * important_predictors(j, :)(i);
   endfor
   w(i) = acc;
+  acc = 0;
 endfor
 
-w
-optimal
+w = w / norm(w);
 
-# plotting for the first set of features
+# plotting for the second set of features.
 
 plot_x = [];
 
@@ -70,38 +119,28 @@ scatter(plot_x(:, 1)(classes == -1), plot_x(:, 2)(classes == -1), '-*');
 
 hold on;
 
-b = classes(1) * dot(important_predictors(1, :), w) - 1;
-
-hyperplane = @(n, x) -n(1) * x / n(2) - b / n(2);
-
-plot_points = linspace(0, 10);
-
-plot(plot_points, hyperplane(w(1:2), plot_points), 'r');
-
-# plotting for the second set of features.
-
-plot_x = [];
+b = 0;
 
 for i = 1:length(classes)
-  plot_x(i, :) = important_predictors(i, :)([3 4]);
-endfor
+  if optimal(i) != 0
+     b = b + 1 / classes(i) - dot(important_predictors(i, :), w);
+  end
+end
 
-scatter(plot_x(:, 1)(classes == 1), plot_x(:, 2)(classes == 1), '-o');
-
-hold on;
-
-scatter(plot_x(:, 1)(classes == -1), plot_x(:, 2)(classes == -1), '-*');
-
-hold on;
-
-b = classes(1) * dot(important_predictors(1, :), w) - 1;
+b = b / length(classes);
 
 hyperplane = @(n, x) -n(1) * x / n(2) - b / n(2);
 
 plot_points = linspace(0, 6);
 
-plot(plot_points, hyperplane(w(3:4), plot_points), 'r');
+plot(plot_points, hyperplane(w(1:2), plot_points), 'r');
 
-w
-b
+hold off;
 
+results = [];
+
+for i = 1:length(classes)
+   results(i) = dot(w, important_predictors(i, :)) + b;
+end
+
+results
