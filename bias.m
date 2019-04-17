@@ -1,13 +1,7 @@
-function [b] = bias(classes, vars, optimal, normal, threshold)
-  b = 0;
-  cnt = 0;
+function [b] = bias(classes, vars, optimal, normal)
+  [max_value_1, max_index_1] = max(optimal);
+  optimal(max_index_1) = -Inf;
+  [max_value_2, max_index_2] = max(optimal);
 
-  for i = 1:length(optimal)
-    if optimal(i) > threshold
-      cnt = cnt + 1;
-      b = b + 1 / classes(i) - dot(vars(i, :), normal);
-    endif
-  endfor
-
-  b = b / cnt;
+  b = 1 / 2 * (classes(max_index_1) + classes(max_index_2) - dot(vars(max_index_1, :) + vars(max_index_2, :), normal));
 endfunction

@@ -15,59 +15,18 @@ for i = 1:length(important_predictors)
 endfor
 
 dual_objective = @(m) 1/2 * m * G * transpose(m) - dot(e, m);
-constraint_1 = @(m) (dot(classes, m)).^2;
-constraint_2 = @(m) dot((max(0, -m)).^2, e);
 
-c_first = 10^20;
-c_second = 10^20;
+c_first = 10^10;
+c_second = 10^10;
 optimal_start = ones(1, length(classes));
 
-% optimal = barrier(dual_objective, c_first, c_second, optimal_start, classes);
-optimal = penalty(dual_objective, c_first, c_second, optimal_start, classes);
+optimal_barrier = barrier(dual_objective, c_first, c_second, optimal_start, classes);
+optimal_penalty = penalty(dual_objective, c_first, c_second, optimal_start, classes);
 
-w = [];
+w_penalty = normal(optimal_penalty, important_predictors, classes);
+w_barrier = normal(optimal_barrier, important_predictors, classes);
 
-for i = 1:length(important_predictors(1, :))
-  acc = 0;
-  for j = 1:length(classes)
-    acc = acc + optimal(j) * classes(j) * important_predictors(j, :)(i);
-  endfor
-  w(i) = acc;
-  acc = 0;
-endfor
+b_penalty = bias(classes, important_predictors, optimal_penalty, w_penalty);
+b_barrier = bias(classes, important_predictors, optimal_barrier, w_barrier);
 
-w = w / norm(w);
-
-# plotting for the second set of features.
-
-plot_x = [];
-
-for i = 1:length(classes)
-  plot_x(i, :) = important_predictors(i, :)([1 2]);
-endfor
-
-scatter(plot_x(:, 1)(classes == 1), plot_x(:, 2)(classes == 1), '-o');
-
-hold on;
-
-scatter(plot_x(:, 1)(classes == -1), plot_x(:, 2)(classes == -1), '-*');
-
-hold on;
-
-b = bias(classes, important_predictors, optimal, w, 0.5);
-
-hyperplane = @(n, x) -n(1) * x / n(2) - b / n(2);
-
-plot_points = linspace(0, 6);
-
-plot(plot_points, hyperplane(w(1:2), plot_points), 'r');
-
-hold off;
-
-results = [];
-
-for i = 1:length(classes)
-   results(i) = dot(w, important_predictors(i, :)) + b;
-end
-
-results
+graph(important_predictors, [w_penalty, b_penalty], [w_barrier, b_barrier], classes);
