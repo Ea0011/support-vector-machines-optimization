@@ -11,7 +11,7 @@ function [g] = graph(data, params_1, params_2, params_3, classes)
   hold on;
   scatter(plot_x(:, 1)(classes == -1), plot_x(:, 2)(classes == -1), '*');
 
-  plot_points = linspace(0, 6);
+  plot_points = linspace(-5, 10);
 
   normal_1 = params_1(1:2);
   bias_1 = params_1(3);
