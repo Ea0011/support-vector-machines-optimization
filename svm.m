@@ -22,11 +22,14 @@ optimal_start = ones(1, length(classes));
 
 optimal_barrier = barrier(dual_objective, c_first, c_second, optimal_start, classes);
 optimal_penalty = penalty(dual_objective, c_first, c_second, optimal_start, classes);
+optimal_lagrange = augmented_lagrange(dual_objective, optimal_start, classes);
 
 w_penalty = normal(optimal_penalty, important_predictors, classes);
 w_barrier = normal(optimal_barrier, important_predictors, classes);
+w_lagrange = normal(optimal_lagrange, important_predictors, classes);
 
 b_penalty = bias(classes, important_predictors, optimal_penalty, w_penalty);
 b_barrier = bias(classes, important_predictors, optimal_barrier, w_barrier);
+b_lagrange = bias(classes, important_predictors, optimal_lagrange, w_lagrange);
 
-graph(important_predictors, [w_penalty, b_penalty], [w_barrier, b_barrier], classes);
+graph(important_predictors, [w_penalty, b_penalty], [w_barrier, b_barrier], [w_lagrange, b_lagrange], classes);
