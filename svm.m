@@ -10,7 +10,7 @@ e = ones(1, length(classes));
 
 for i = 1:length(important_predictors)
   for j = 1:length(important_predictors)
-    G(i, j) = kernel(important_predictors(i, :), important_predictors(j, :), 'rbf', 1) * classes(i) * classes(j);
+    G(i, j) = kernel(important_predictors(i, :), important_predictors(j, :)) * classes(i) * classes(j);
   endfor
 endfor
 
@@ -78,9 +78,12 @@ duration = [barrier_time, 0, 0; 0, lagrange_time, 0; 0, 0, penalty_time];
 bar_plot = bar(duration);
 legend(bar_plot, l);
 
-filename = 'mtcars.txt';
-delimiterIn = ',';
-data = importdata(filename, delimiterIn, 1).data;
+kernel_results_barrier = [];
+kernel_results_penalty = [];
+kernel_results_lagrange = [];
 
-classes = data(:, 9);
-important_predictors = [data(:, 2), data(:, 5)];
+for i=1:length(test_predictors)
+  kernel_results_barrier(i) = kernelized_decision(test_predictors(i, :), important_predictors, classes, optimal_barrier);
+  kernel_results_penalty(i) = kernelized_decision(test_predictors(i, :), important_predictors, classes, optimal_penalty);
+  kernel_results_lagrange(i) = kernelized_decision(test_predictors(i, :), important_predictors, classes, optimal_lagrange);
+endfor
