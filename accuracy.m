@@ -1,0 +1,2 @@
+function [accuracy] = accuracy(data, classes, normal, bias)  results = [];  for i = 1:length(classes)    results(i) = sign(dot(normal, data(i, :)) + bias);  endfor    accurate_predictions = 0;    for i = 1:length(results)    if results(i) == classes(i)      accurate_predictions = accurate_predictions + 1;      endif  endfor    accuracy = accurate_predictions / length(results);
+endfunction
