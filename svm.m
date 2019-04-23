@@ -17,9 +17,9 @@ endfor
 dual_objective = @(m) 1/2 * m * G * transpose(m) - dot(e, m);
 
 optimal_start = ones(1, length(classes));
-[optimal_barrier, barrier_time] = barrier(dual_objective, 10^2, 10^2, optimal_start, classes);
+[optimal_barrier, barrier_time] = barrier(dual_objective, 10^20, 10^20, optimal_start, classes);
 optimal_start = zeros(1, length(classes));
-[optimal_penalty, penalty_time] = penalty(dual_objective, 10^20, 10^20, optimal_start, classes);
+[optimal_penalty, penalty_time] = penalty(dual_objective, 10^2, 10^2, optimal_start, classes);
 optimal_start = zeros(1, length(classes));
 [optimal_lagrange, lagrange_time] = augmented_lagrange(dual_objective, optimal_start, classes);
 
@@ -27,9 +27,18 @@ w_penalty = normal(optimal_penalty, important_predictors, classes);
 w_barrier = normal(optimal_barrier, important_predictors, classes);
 w_lagrange = normal(optimal_lagrange, important_predictors, classes);
 
-b_penalty = bias(classes, important_predictors, optimal_penalty, w_penalty);
-b_barrier = bias(classes, important_predictors, optimal_barrier, w_barrier);
-b_lagrange = bias(classes, important_predictors, optimal_lagrange, w_lagrange);
+% uncomment this to enable bias calculation based on iotimization reults
+
+% b_penalty = bias(classes, important_predictors, optimal_penalty, w_penalty);
+% b_barrier = bias(classes, important_predictors, optimal_barrier, w_barrier);
+% b_lagrange = bias(classes, important_predictors, optimal_lagrange, w_lagrange);
+
+% uncomment to enable adaptive bias calculation
+% by running this commands separately you can see the path each line travels to have optimal bias
+
+b_penalty = adjust_bias(important_predictors, w_penalty, classes, 'r', 'penalty path');
+b_barrier = adjust_bias(important_predictors, w_barrier, classes, 'b', 'barrier path');
+b_lagrange = adjust_bias(important_predictors, w_lagrange, classes, 'g', 'lagrange path');
 
 graph_data(important_predictors, classes, ['r', 'o'], ['b', '*']);
 graph(important_predictors, [w_penalty, b_penalty], classes, 'r', 'Penalty');
@@ -45,8 +54,10 @@ test_file_name = 'iris_test.txt';
 test_data = importdata(test_file_name, delimiterIn, 1).data;
 
 test_classes = test_data(:, 5);
+% make sure test and important preditctors have the same indicies for data points
 test_predictors = [test_data(:, 1), test_data(:, 2)];
 
+% mark test data differently on the plot
 graph_data(test_predictors, test_classes, ['m', 'x'], ['k', '+']);
 graph(test_predictors, [w_penalty, b_penalty], test_classes, 'r', 'Penalty');
 graph(test_predictors, [w_barrier, b_barrier], test_classes, 'b', 'Barrier');

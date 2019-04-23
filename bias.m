@@ -1,3 +1,4 @@
+% calculates bias based on the results of the optimization, faster but prone to error
 function [b] = bias(classes, vars, optimal, normal)
   [max_value_1, max_index_1] = max(optimal);
   optimal(max_index_1) = -Inf;
