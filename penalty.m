@@ -14,7 +14,7 @@ function [optimal, time] = penalty(objective, pen_1, pen_2, guess, classes)
   optimal_found = fminsearch(penalty_obejctive(pen_1, pen_2), optimal_start);
   
   while(cnt <= max_count && norm(optimal_start - optimal_found) >= err 
-        && norm(penalty_obejctive(pen_1, pen_2)(optimal_found) - 
+        || norm(penalty_obejctive(pen_1, pen_2)(optimal_found) - 
         penalty_obejctive(pen_1, pen_2)(optimal_start)) >= err)
         
     optimal_start = optimal_found;

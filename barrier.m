@@ -4,7 +4,7 @@ function [optimal, time] = barrier(objective, pen_1, pen_2, guess, classes)
   eql_constraint = @(m) (dot(m, classes)).^2;
   barrier_function = @(m) -1 / dot(-m, ones(1, length(m)));
   
-  err = 10^-50;
+  err = 10^-20;
   max_count = 100;
   cnt = 1;
   
@@ -13,13 +13,13 @@ function [optimal, time] = barrier(objective, pen_1, pen_2, guess, classes)
   
   optimal_found = fminsearch(barrier_objective(pen_1, pen_2), optimal_start);
   
-  while(cnt <= max_count && norm(optimal_start - optimal_found) >= err &&
+  while(cnt <= max_count && norm(optimal_start - optimal_found) >= err ||
         norm(barrier_objective(pen_1, pen_2)(optimal_found) - 
         barrier_objective(pen_1, pen_2)(optimal_start)) >= err)
         
     optimal_start = optimal_found;
-    pen_1 = 10^20 * pen_1;
-    pen_2 = 10^20 * pen_2;
+    pen_1 = 10^5 * pen_1;
+    pen_2 = 10^5 * pen_2;
     
     optimal_found = fminsearch(barrier_objective(pen_1, pen_2), optimal_found);
     cnt = cnt + 1;
