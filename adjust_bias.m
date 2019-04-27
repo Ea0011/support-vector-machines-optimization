@@ -32,7 +32,7 @@ function [adjusted_bias, margin_bias_1, margin_bias_2] = adjust_bias(vars, norma
   
   % set the lint to pass throgh that point
   bias = -vars(closest_opposite_class, :)(2) * normal(2) - vars(closest_opposite_class, :)(1) * normal(1);
-  margin_bias_2 = bias
+  margin_bias_2 = bias;
   
   % get the bias so that the line passes through the middle of two classes
   adjusted_bias = abs(bias + opposing_bias) ./ 2;

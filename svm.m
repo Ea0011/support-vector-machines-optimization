@@ -29,15 +29,14 @@ w_lagrange = normal(optimal_lagrange, important_predictors, classes);
 
 % uncomment this to enable bias calculation based on optimization reults
 
-% b_penalty = bias(classes, important_predictors, optimal_penalty, w_penalty);
-% b_barrier = bias(classes, important_predictors, optimal_barrier, w_barrier);
-% b_lagrange = bias(classes, important_predictors, optimal_lagrange, w_lagrange);
+% [b_penalty, closest_positive_bias_pen, closest_negative_bias_pen] = bias(classes, important_predictors, optimal_penalty, w_penalty);
+%[b_barrier, closest_positive_bias_bar, closest_negative_bias_bar] = bias(classes, important_predictors, optimal_barrier, w_barrier);
+%b_lagrange, closest_positive_bias_lag, closest_negative_bias_lag] = bias(classes, important_predictors, optimal_lagrange, w_lagrange);
 
 % uncomment to enable adaptive bias calculation, not this works only in linearly separable case
-[b_penalty, pen_margin_1, pen_margin_2] = adjust_bias(important_predictors, w_penalty, classes, 'r', 'penalty path');
-[b_barrier, bar_margin_1, bar_margin_2] = adjust_bias(important_predictors, w_barrier, classes, 'b', 'barrier path');
-[b_lagrange, lag_margin_1, lag_margin_2] = adjust_bias(important_predictors, w_lagrange, classes, 'g', 'lagrange path');
-[abs(pen_margin_1 - pen_margin_2), abs(bar_margin_1 - bar_margin_2), abs(lag_margin_1 - lag_margin_2)]
+[b_penalty, closest_positive_bias_pen, closest_negative_bias_pen] = adjust_bias(important_predictors, w_penalty, classes, 'r', 'penalty path');
+[b_barrier, closest_positive_bias_bar, closest_negative_bias_bar] = adjust_bias(important_predictors, w_barrier, classes, 'b', 'barrier path');
+[b_lagrange, closest_positive_bias_lag, closest_negative_bias_bar] = adjust_bias(important_predictors, w_lagrange, classes, 'g', 'lagrange path');
 graph_data(important_predictors, classes, ['r', 'o'], ['b', '*']);
 
 graph(important_predictors, [w_penalty, b_penalty], classes, 'r', 'Penalty');
@@ -45,12 +44,12 @@ graph(important_predictors, [w_barrier, b_barrier], classes, 'b', 'Barrier');
 graph(important_predictors, [w_lagrange, b_lagrange], classes, 'g', 'Lagrange');
 
 % plot the margins as well
-graph(important_predictors, [w_penalty, pen_margin_1], classes, '--r', 'Penalty Margins');
-graph(important_predictors, [w_penalty, pen_margin_2], classes, '--r', 'Penalty Margins');
-graph(important_predictors, [w_barrier, bar_margin_1], classes, '--b', 'Barrier Margins');
-graph(important_predictors, [w_barrier, bar_margin_2], classes, '--b', 'Barrier Margins');
-graph(important_predictors, [w_lagrange, lag_margin_1], classes, '--g', 'Lagrange Margins');
-graph(important_predictors, [w_penalty, lag_margin_2], classes, '--g', 'Lagrange Margins');
+graph(important_predictors, [w_penalty, closest_negative_bias_pen], classes, '--r', 'Penalty Margins');
+graph(important_predictors, [w_penalty, closest_positive_bias_pen], classes, '--r', '');
+graph(important_predictors, [w_barrier, closest_positive_bias_bar], classes, '--b', 'Barrier Margins');
+graph(important_predictors, [w_barrier, closest_negative_bias_bar], classes, '--b', '');
+graph(important_predictors, [w_lagrange, closest_positive_bias_lag], classes, '--g', 'Lagrange Margins');
+graph(important_predictors, [w_lagrange, closest_negative_bias_lag], classes, '--g', '');
 legend;
 
 train_accuracy_penalty = accuracy(important_predictors, classes, w_penalty, b_penalty);

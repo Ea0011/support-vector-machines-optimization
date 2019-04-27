@@ -1,5 +1,5 @@
 % calculates bias based on the results of the optimization, faster but prone to error
-function [b] = bias(classes, vars, optimal, normal)
+function [b, closest_positive_bias, closest_negative_bias] = bias(classes, vars, optimal, normal)
   [max_value_1, max_index_1] = max(optimal);
   optimal(max_index_1) = -Inf;
   [max_value_2, max_index_2] = max(optimal);
@@ -15,12 +15,12 @@ function [b] = bias(classes, vars, optimal, normal)
   raw_negative_classes = [];
 
   for classIndex = 1:length(classes)
-    if (classes[classIndex] == 1)
-      positive_class_points = [positive_class_points, vars[classIndex]];
+    if (classes(classIndex) == 1)
+      positive_class_points = [positive_class_points; vars(classIndex, :)];
       raw_positive_classes = [raw_positive_classes, 1];
     endif
-    if (classes[classIndex] == -1)
-      negative_class_points = [negative_class_points, vars[classIndex]];
+    if (classes(classIndex) == -1)
+      negative_class_points = [negative_class_points; vars(classIndex, :)];
       raw_negative_classes = [raw_negative_classes, -1];
     endif
   endfor
@@ -34,10 +34,12 @@ function [b] = bias(classes, vars, optimal, normal)
 
   % Biases for each class
   % TODO!: return from the function once checked
-  closest_positive = positive_class_points(closest_negative_point_index, :);
-  closest_negative = negative_class_points(closest_negative_point_index, :);
-
-  closest_positive_bias = -closest_positive(2) * normal(2) - closest_positive(1) * normal(1);
-  closest_negative_bias = -closest_negative(2) * normal(2) - closest_negative(1) * normal(1);
+  closest_positive = positive_class_points(closest_negative_point_index(1), :);
+  closest_negative = negative_class_points(closest_negative_point_index(1), :);
+  
+  closest_positive
+  
+  closest_positive_bias = -dot(closest_positive, normal);
+  closest_negative_bias = -dot(closest_negative, normal);
 
 endfunction
