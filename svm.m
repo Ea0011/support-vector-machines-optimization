@@ -3,6 +3,10 @@ delimiterIn = ',';
 data = importdata(filename, delimiterIn, 1).data;
 
 classes = data(:, 5);
+% 1, 4 is harder than others, penalty method fails
+% 1, 2 is hard
+% 3, 4 is very easily separated, all methods draw similar lines
+% 1, 3 is easy as well
 important_predictors = [data(:, 1), data(:, 2)];
 
 G = [];
@@ -29,28 +33,28 @@ w_lagrange = normal(optimal_lagrange, important_predictors, classes);
 
 % uncomment this to enable bias calculation based on optimization reults
 
-% b_penalty = bias(classes, important_predictors, optimal_penalty, w_penalty);
-% b_barrier = bias(classes, important_predictors, optimal_barrier, w_barrier);
-% b_lagrange = bias(classes, important_predictors, optimal_lagrange, w_lagrange);
+b_penalty = bias(classes, important_predictors, optimal_penalty, w_penalty);
+b_barrier = bias(classes, important_predictors, optimal_barrier, w_barrier);
+b_lagrange = bias(classes, important_predictors, optimal_lagrange, w_lagrange);
 
 % uncomment to enable adaptive bias calculation, not this works only in linearly separable case
-[b_penalty, pen_margin_1, pen_margin_2] = adjust_bias(important_predictors, w_penalty, classes, 'r', 'penalty path');
-[b_barrier, bar_margin_1, bar_margin_2] = adjust_bias(important_predictors, w_barrier, classes, 'b', 'barrier path');
-[b_lagrange, lag_margin_1, lag_margin_2] = adjust_bias(important_predictors, w_lagrange, classes, 'g', 'lagrange path');
+[b_penalty, pen_margin_1, pen_margin_2] = adjust_bias(important_predictors, w_penalty, classes);
+[b_barrier, bar_margin_1, bar_margin_2] = adjust_bias(important_predictors, w_barrier, classes);
+[b_lagrange, lag_margin_1, lag_margin_2] = adjust_bias(important_predictors, w_lagrange, classes);
 [abs(pen_margin_1 - pen_margin_2), abs(bar_margin_1 - bar_margin_2), abs(lag_margin_1 - lag_margin_2)]
 graph_data(important_predictors, classes, ['r', 'o'], ['b', '*']);
 
-graph(important_predictors, [w_penalty, b_penalty], classes, 'r', 'Penalty');
-graph(important_predictors, [w_barrier, b_barrier], classes, 'b', 'Barrier');
-graph(important_predictors, [w_lagrange, b_lagrange], classes, 'g', 'Lagrange');
+graph(important_predictors, [w_penalty, b_penalty], classes, '-r', 'Penalty');
+graph(important_predictors, [w_barrier, b_barrier], classes, '-b', 'Barrier');
+graph(important_predictors, [w_lagrange, b_lagrange], classes, '-g', 'Lagrange');
 
 % plot the margins as well
 graph(important_predictors, [w_penalty, pen_margin_1], classes, '--r', 'Penalty Margins');
-graph(important_predictors, [w_penalty, pen_margin_2], classes, '--r', 'Penalty Margins');
+graph(important_predictors, [w_penalty, pen_margin_2], classes, '--r', '');
 graph(important_predictors, [w_barrier, bar_margin_1], classes, '--b', 'Barrier Margins');
-graph(important_predictors, [w_barrier, bar_margin_2], classes, '--b', 'Barrier Margins');
+graph(important_predictors, [w_barrier, bar_margin_2], classes, '--b', '');
 graph(important_predictors, [w_lagrange, lag_margin_1], classes, '--g', 'Lagrange Margins');
-graph(important_predictors, [w_penalty, lag_margin_2], classes, '--g', 'Lagrange Margins');
+graph(important_predictors, [w_lagrange, lag_margin_2], classes, '--g', '');
 legend;
 
 train_accuracy_penalty = accuracy(important_predictors, classes, w_penalty, b_penalty);
