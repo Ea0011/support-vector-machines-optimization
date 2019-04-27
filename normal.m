@@ -1,6 +1,5 @@
 function [w] = normal(optimal, data, classes)
   w = [];
-  kernelized_normal = 0;
   for i = 1:length(data(1, :))
     acc = 0;
     for j = 1:length(classes)

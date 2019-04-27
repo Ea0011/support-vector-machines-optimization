@@ -34,11 +34,8 @@ function [b, closest_positive_bias, closest_negative_bias] = bias(classes, vars,
 
   % Biases for each class
   % TODO!: return from the function once checked
-  closest_positive = positive_class_points(closest_negative_point_index(1), :);
+  closest_positive = positive_class_points(closest_positive_point_index(1), :);
   closest_negative = negative_class_points(closest_negative_point_index(1), :);
-  
-  closest_positive
-  
   closest_positive_bias = -dot(closest_positive, normal);
   closest_negative_bias = -dot(closest_negative, normal);
 

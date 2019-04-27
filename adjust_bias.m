@@ -4,7 +4,7 @@ function [adjusted_bias, margin_bias_1, margin_bias_2] = adjust_bias(vars, norma
   bias = 0;
   
   dists_to_points = distances(vars, normal, bias, classes);
-
+  
   % find the closest point to the line
   [_, min_index] = min(abs(dists_to_points));
   closest_class = classes(min_index(1));
@@ -12,7 +12,7 @@ function [adjusted_bias, margin_bias_1, margin_bias_2] = adjust_bias(vars, norma
   [_, closest_opposite_class] = min(abs(dists_to_points()(dists_to_points(:, 2) == -closest_class)));
   % if opposite class is the negative class add half the number of classes to get the actual index not the in negative classes
   if (closest_class == 1)
-    closest_opposite_class = floor(length(classes) / 2) + closest_opposite_class;
+    closest_opposite_class = floor(length(classes)) / 2 + closest_opposite_class;
   endif
 
   % set the line to pass through the closest point of the opposite class
@@ -27,10 +27,10 @@ function [adjusted_bias, margin_bias_1, margin_bias_2] = adjust_bias(vars, norma
   [_, closest_opposite_class] = min(abs(dists_to_points(dists_to_points(:, 2) == closest_class)));
   
   if (closest_class == -1)
-    closest_opposite_class = floor(length(classes) / 2) + closest_opposite_class;
+    closest_opposite_class = floor(length(classes)) / 2 + closest_opposite_class;
   endif
   
-  % set the lint to pass throgh that point
+  % set the line to pass throgh that point
   bias = -vars(closest_opposite_class, :)(2) * normal(2) - vars(closest_opposite_class, :)(1) * normal(1);
   margin_bias_2 = bias;
   
